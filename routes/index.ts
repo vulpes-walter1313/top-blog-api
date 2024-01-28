@@ -1,0 +1,8 @@
+import express from 'express';
+const router = express.Router();
+
+/* GET home page. */
+router.get('/', function(req, res, next) {
+  res.send("Welcome the the express app with typescript!")});
+
+export default router;
