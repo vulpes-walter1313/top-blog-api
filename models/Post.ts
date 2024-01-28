@@ -10,21 +10,21 @@ const postSchema = new Schema(
     author: { type: Types.ObjectId, ref: "user", required: true },
     isPublished: Boolean,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 postSchema.virtual("createdAtFormatted").get(function () {
   return DateTime.fromJSDate(this.createdAt).toLocaleString(
-    DateTime.DATETIME_MED
+    DateTime.DATETIME_MED,
   );
 });
 
 postSchema.virtual("updatedAtFormatted").get(function () {
   return DateTime.fromJSDate(this.updatedAt).toLocaleString(
-    DateTime.DATETIME_MED
+    DateTime.DATETIME_MED,
   );
 });
 
-const Post = mongoose.model('post', postSchema);
+const Post = mongoose.model("post", postSchema);
 
 export default Post;

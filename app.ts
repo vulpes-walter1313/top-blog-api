@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000;
 async function main() {
   await mongoose.connect(process.env.MONGODB as string);
 }
-main().catch(err => console.log(err));
+main().catch((err) => console.log(err));
 
 app.use(logger("dev"));
 app.use(express.json());
@@ -21,13 +21,13 @@ app.use(cookieParser());
 app.use("/", indexRouter);
 app.use(postRouter);
 
-const server = app.listen(port, ()=> {
+const server = app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
 });
 
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal reveiced: closing HTTP server');
+process.on("SIGTERM", () => {
+  console.log("SIGTERM signal reveiced: closing HTTP server");
   server.close(() => {
-    console.log('HTTP server closed');
-  })
-})
+    console.log("HTTP server closed");
+  });
+});

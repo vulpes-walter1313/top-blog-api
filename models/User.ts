@@ -6,9 +6,9 @@ const userSchema = new Schema({
   email: String,
   password: String,
   isAuthor: Boolean,
-  isAdmin: Boolean
-})
+  isAdmin: Boolean,
+});
 
-const User = mongoose.model('user', userSchema);
+const User = mongoose.model("user", userSchema);
 
 export default User;
