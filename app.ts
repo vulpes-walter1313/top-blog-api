@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import logger from "morgan";
 import "dotenv/config";
 import indexRouter from "./routes/index";
+import postRouter from "./routes/postRoutes";
 import mongoose from "mongoose";
 
 const app: Express = express();
@@ -18,7 +19,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use("/", indexRouter);
+app.use(postRouter);
 
-app.listen(port, ()=> {
+const server = app.listen(port, ()=> {
   console.log(`[server]: Server is running at http://localhost:${port}`);
+});
+
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal reveiced: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+  })
 })
