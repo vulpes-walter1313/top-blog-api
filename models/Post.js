@@ -1,5 +1,5 @@
-import mongoose, { Types } from "mongoose";
-import { DateTime } from "luxon";
+const mongoose = require("mongoose");
+const { DateTime } = require("luxon");
 
 const { Schema } = mongoose;
 
@@ -7,7 +7,7 @@ const postSchema = new Schema(
   {
     title: String,
     body: String,
-    author: { type: Types.ObjectId, ref: "user", required: true },
+    author: { type: mongoose.Types.ObjectId, ref: "user", required: true },
     isPublished: Boolean,
   },
   { timestamps: true },
@@ -27,4 +27,4 @@ postSchema.virtual("updatedAtFormatted").get(function () {
 
 const Post = mongoose.model("post", postSchema);
 
-export default Post;
+module.exports = Post;

@@ -1,11 +1,11 @@
-import mongoose, { Types } from "mongoose";
-import { DateTime } from "luxon";
+const mongoose = require("mongoose");
+const { DateTime } = require("luxon");
 const { Schema } = mongoose;
 
 const commentSchema = new Schema(
   {
-    commentAuthor: { type: Types.ObjectId, ref: "user" },
-    postId: { types: Types.ObjectId, ref: "post" },
+    commentAuthor: { type: mongoose.Types.ObjectId, ref: "user" },
+    postId: { types: mongoose.Types.ObjectId, ref: "post" },
     body: String,
   },
   { timestamps: true },
@@ -22,3 +22,6 @@ commentSchema.virtual("updatedAtFormatted").get(function () {
     DateTime.DATETIME_MED,
   );
 });
+
+const Comment = mongoose.model("comment", commentSchema);
+module.exports = Comment;

@@ -1,17 +1,16 @@
-import express, { type Express, type Request, type Response } from "express";
-import cookieParser from "cookie-parser";
-import logger from "morgan";
-import "dotenv/config";
-import indexRouter from "./routes/index";
-import postRouter from "./routes/postRoutes";
-import mongoose from "mongoose";
-import session from "express-session";
-import MongoStore from "connect-mongo";
+const express = require("express");
+const logger = require("morgan");
+require("dotenv").config();
+const indexRouter = require("./routes/index");
+const postRouter = require("./routes/postRoutes");
+const mongoose = require("mongoose");
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
 
-const app: Express = express();
+const app = express();
 const port = process.env.PORT || 3000;
 async function main() {
-  await mongoose.connect(process.env.MONGODB as string);
+  await mongoose.connect(process.env.MONGODB);
 }
 main().catch((err) => console.log(err));
 
@@ -21,7 +20,7 @@ app.use(express.urlencoded({ extended: false }));
 // app.use(cookieParser());
 app.use(
   session({
-    secret: process.env.SESSION_SECRET as string,
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true, // normally true in other tutorials but false could work
     store: MongoStore.create({

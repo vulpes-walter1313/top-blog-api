@@ -1,5 +1,5 @@
-import express from "express";
-import postController from "../controllers/postController";
+const express = require("express");
+const postController = require("../controllers/postController");
 
 const router = express.Router();
 
@@ -22,4 +22,4 @@ router.delete(
   postController.comments_POST,
 );
 
-export default router;
+module.exports = router;
