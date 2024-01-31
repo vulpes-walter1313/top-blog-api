@@ -23,8 +23,6 @@ const posts_POST = [
      */
     const data = matchedData(req);
     if (result.isEmpty()) {
-      // still working on this. test that published really is a boolean
-      //  or if it will need to be converted from string to boolean.
       const { title, body } = data;
       const published = data.published === "true" ? true : false;
 
