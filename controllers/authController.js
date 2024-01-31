@@ -5,7 +5,15 @@ const asyncHandler = require("express-async-handler");
 
 const signup_POST = [
   body("name").isLength({ min: 1, max: 24 }).escape(),
-  body("email").isEmail().escape(),
+  body("email")
+    .isEmail()
+    .custom(async (value) => {
+      const user = await User.findOne({ email: value }).exec();
+      if (user) {
+        throw new Error("E-mail already is registered");
+      }
+    })
+    .escape(),
   body("password").isLength({ min: 6 }),
   asyncHandler(async (req, res) => {
     const result = validationResult(req);
