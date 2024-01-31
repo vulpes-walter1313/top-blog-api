@@ -76,12 +76,10 @@ const logout_GET = (req, res, next) => {
     const { userId } = req.session.user;
     req.session.destroy((err) => {
       if (err) return next(err);
-      res
-        .status(200)
-        .json({
-          success: true,
-          message: `user: ${userId} logged out successfully`,
-        });
+      res.status(200).json({
+        success: true,
+        message: `user: ${userId} logged out successfully`,
+      });
     });
   } else {
     const error = new Error();
