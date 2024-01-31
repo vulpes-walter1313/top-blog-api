@@ -6,6 +6,7 @@ const postRouter = require("./routes/postRoutes");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
+const { getUserFromSession } = require("./middleware/sessionMiddleware");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -36,6 +37,7 @@ app.use(
     },
   }),
 );
+app.use(getUserFromSession);
 
 app.use("/", indexRouter);
 app.use(postRouter);
