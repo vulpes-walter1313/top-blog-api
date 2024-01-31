@@ -12,7 +12,6 @@ const signup_POST = [
 
     if (result.isEmpty()) {
       const { name, email, password } = matchedData(req);
-      // console.log(email, password);
       const hash = await bcrypt.hash(password, 8);
       const user = new User({
         name,
@@ -23,13 +22,11 @@ const signup_POST = [
       });
       await user.save();
 
-      res.json({ success: true, userId: user._id });
+      return res.status(201).json({ success: true, userId: user._id });
     } else {
       // validation result failed
-      console.log("validation result failed");
       const { email, password } = matchedData(req);
-      console.log(email, password);
-      res.status(400).json({
+      return res.status(400).json({
         errors: result.array(),
       });
     }
@@ -44,18 +41,58 @@ const login_POST = [
 
     if (result.isEmpty()) {
       const { email, password } = matchedData(req);
-      const user = await User.find({ email: email }).exec();
+      const user = await User.findOne({ email: email }).exec();
       if (user) {
         const isValid = await bcrypt.compare(password, user.password);
         if (isValid) {
-          req.session.user = { userId: user._id}
+          req.session.user = { userId: user._id };
+          return res.json({ success: true, user: user._id });
+        } else {
+          // User exists but invalid password
+
+          const error = new Error();
+          error.message = "Password is incorrect";
+          error.status = 400;
+          return res
+            .status(400)
+            .json({ errors: { ...error, message: error.message } });
         }
+      } else {
+        // User does not exist
+        const error = new Error();
+        error.message = "User does not exist. Please register first.";
+        error.status = 400;
+        return res.status(400).json({ errors: error });
       }
+    } else {
+      // validation errors
+      res.status(400).json({ errors: result.array() });
     }
   }),
 ];
 
+const logout_GET = (req, res, next) => {
+  if (req.session.user) {
+    const { userId } = req.session.user;
+    req.session.destroy((err) => {
+      if (err) return next(err);
+      res
+        .status(200)
+        .json({
+          success: true,
+          message: `user: ${userId} logged out successfully`,
+        });
+    });
+  } else {
+    const error = new Error();
+    error.message = "There is no logged in user";
+    error.status = 400;
+    res.status(400).json({ errors: error });
+  }
+};
+
 module.exports = {
   signup_POST,
   login_POST,
+  logout_GET,
 };
