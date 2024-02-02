@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Post = require("../models/Post");
+const User = require("../models/User");
 const { body, validationResult, matchedData } = require("express-validator");
 const { isAuthed, isAdmin } = require("../middleware/sessionMiddleware");
 
@@ -72,9 +73,37 @@ const posts_POST = [
   }),
 ];
 
-const post_GET = (req, res) => {
-  res.send(`GET => /posts/${req.params.postId} is not implemented yet`);
-};
+const post_GET = asyncHandler(async (req, res) => {
+  let post = null;
+  try {
+    post = await Post.findById(req.params.postId)
+      .populate("author", "name -_id")
+      .exec();
+  } catch (err) {
+    return res.status(400).json({ success: false, errors: err });
+  }
+  if (!post) {
+    // if post doesn't exist
+    const error = new Error();
+    error.status = 404;
+    error.message = "Post by that id was not found";
+    return res.status(404).json({ success: false, errors: error });
+  }
+
+  if (post.isPublished || (req.user && req.user.isAdmin)) {
+    // if the post is public or user is admin
+    res.status(200).json({ success: true, post: post });
+  } else {
+    res.status(403).json({
+      success: true,
+      errors: {
+        status: 403,
+        message:
+          "You either need to authenticate, or if you are authenticated, you don't have permissions to view this resource.",
+      },
+    });
+  }
+});
 
 const post_PUT = (req, res) => {
   res.send("PUT => /posts/:postId is not implemented yet");
