@@ -3,9 +3,38 @@ const Post = require("../models/Post");
 const { body, validationResult, matchedData } = require("express-validator");
 const { isAuthed, isAdmin } = require("../middleware/sessionMiddleware");
 
-const posts_GET = (req, res) => {
-  res.send("GET -> /posts is not implemented yet");
-};
+const posts_GET = asyncHandler(async (req, res) => {
+  if (req.user) {
+    if (req.user.isAdmin) {
+      const posts = await Post.find({})
+        .sort({ createdAt: "desc" })
+        .limit(20)
+        .populate("author", "name")
+        .exec();
+      res.status(200).json({ success: true, posts: posts });
+    } else {
+      // user authenticated but not admin
+      const posts = await Post.find({})
+        .where("isPublished")
+        .equals(true)
+        .sort({ createdAt: "desc" })
+        .limit(20)
+        .populate("author", "name -_id")
+        .exec();
+      res.status(200).json({ success: true, posts: posts });
+    }
+  } else {
+    // user not authenticated
+    const posts = await Post.find({})
+      .where("isPublished")
+      .equals(true)
+      .sort({ createdAt: "desc" })
+      .limit(20)
+      .populate("author", "name -_id")
+      .exec();
+    res.status(200).json({ success: true, posts: posts });
+  }
+});
 
 const posts_POST = [
   isAuthed,
