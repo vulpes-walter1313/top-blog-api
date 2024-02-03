@@ -42,19 +42,19 @@ const posts_POST = [
   isAdmin,
   body("title").isLength({ min: 3, max: 60 }).escape(),
   body("body").notEmpty().escape(),
-  body("published").isBoolean(),
+  body("isPublished").isBoolean(),
   asyncHandler(async (req, res) => {
     const result = validationResult(req);
     /**
      * @typedef {Object} data
      * @property {string} title
      * @property {string} body
-     * @property {string} published
+     * @property {string} isPublished
      */
     const data = matchedData(req);
     if (result.isEmpty()) {
       const { title, body } = data;
-      const published = data.published === "true" ? true : false;
+      const published = data.isPublished === "true" ? true : false;
 
       const post = new Post({
         title: title,
@@ -105,9 +105,47 @@ const post_GET = asyncHandler(async (req, res) => {
   }
 });
 
-const post_PUT = (req, res) => {
-  res.send("PUT => /posts/:postId is not implemented yet");
-};
+const post_PUT = [
+  isAuthed,
+  body("title").isLength({ min: 3, max: 60 }).escape(),
+  body("body").notEmpty().escape(),
+  body("isPublished").isBoolean(),
+  asyncHandler(async (req, res) => {
+    if (!req.user.isAuthor) {
+      // if the user is not the author
+      return res.status(403).json({
+        success: false,
+        errors: {
+          status: 403,
+          message: "You don't have the permissions to use this resource",
+        },
+      });
+    }
+    const result = validationResult(req);
+    /**
+     * @typedef {Object} data
+     * @property {string} title
+     * @property {string} body
+     * @property {string} isPublished
+     */
+    const data = matchedData(req);
+    if (result.isEmpty()) {
+      const post = await Post.findById(req.params.postId)
+        .populate("author")
+        .exec();
+      post.title = data.title;
+      post.body = data.body;
+      post.isPublished = data.isPublished === "true" ? true : false;
+      await post.save();
+      res
+        .status(200)
+        .json({ success: true, message: `post: ${post._id} updated` });
+    } else {
+      // validation failed
+      return res.status(400).json({ success: false, errors: result.array() });
+    }
+  }),
+];
 
 const post_DELETE = (req, res) => {
   res.send("DELETE => /posts/:postId is not implemented yet");
