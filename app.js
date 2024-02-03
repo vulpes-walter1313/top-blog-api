@@ -41,6 +41,9 @@ app.use(getUserFromSession);
 
 app.use("/", indexRouter);
 app.use(postRouter);
+app.use((err, req, res, next) => {
+  res.status(err.status || 500).json({ success: false, errors: err });
+});
 
 const server = app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
