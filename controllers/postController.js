@@ -147,9 +147,24 @@ const post_PUT = [
   }),
 ];
 
-const post_DELETE = (req, res) => {
-  res.send("DELETE => /posts/:postId is not implemented yet");
-};
+const post_DELETE = [
+  isAuthed,
+  isAdmin,
+  asyncHandler(async (req, res, next) => {
+    try {
+      await Post.findByIdAndDelete(req.params.postId).exec();
+      return res
+        .status(200)
+        .json({
+          success: true,
+          message: `Post: ${req.params.postId} successfully deleted`,
+        });
+    } catch (err) {
+      err.status = 400;
+      return next(err);
+    }
+  }),
+];
 
 const comments_GET = (req, res) => {
   res.send("GET -> /posts/:postId/comments");
