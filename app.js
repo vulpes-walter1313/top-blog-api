@@ -41,6 +41,12 @@ app.use(getUserFromSession);
 
 app.use("/", indexRouter);
 app.use(postRouter);
+app.all("*", (req, res, next) => {
+  const error = new Error();
+  error.status = 404;
+  error.message = "this resource does not exist.";
+  next(error);
+});
 app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ success: false, errors: err });
 });
