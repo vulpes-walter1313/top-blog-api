@@ -153,12 +153,10 @@ const post_DELETE = [
   asyncHandler(async (req, res, next) => {
     try {
       await Post.findByIdAndDelete(req.params.postId).exec();
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: `Post: ${req.params.postId} successfully deleted`,
-        });
+      return res.status(200).json({
+        success: true,
+        message: `Post: ${req.params.postId} successfully deleted`,
+      });
     } catch (err) {
       err.status = 400;
       return next(err);
