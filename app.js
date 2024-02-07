@@ -48,6 +48,7 @@ app.all("*", (req, res, next) => {
   next(error);
 });
 app.use((err, req, res, next) => {
+  err.message = err.message || "Unexpected Error occured";
   res.status(err.status || 500).json({ success: false, errors: err });
 });
 
