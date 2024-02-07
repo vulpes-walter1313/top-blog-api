@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Post = require("../models/Post");
 const User = require("../models/User");
+const Comment = require("../models/Comment");
 const { body, validationResult, matchedData } = require("express-validator");
 const { isAuthed, isAdmin } = require("../middleware/sessionMiddleware");
 
@@ -164,13 +165,73 @@ const post_DELETE = [
   }),
 ];
 
-const comments_GET = (req, res) => {
-  res.send("GET -> /posts/:postId/comments");
-};
+const comments_GET = [
+  asyncHandler(async (req, res, next) => {
+    const post = await Post.exists({ _id: req.params.postId }).exec();
+    if (!post) {
+      const error = new Error();
+      error.status = 404;
+      error.message = "That post doesn't exist";
+      return next(error);
+    }
+    const comments = await Comment.find({ postId: req.params.postId })
+      .populate("commentAuthor", "name")
+      .exec();
+    if (comments) {
+      return res.status(200).json({
+        success: true,
+        comments: comments,
+        numComments: comments.length,
+      });
+    } else {
+      const error = new Error();
+      error.status = 404;
+      error.message = "post not found";
+      return next(error);
+    }
+  }),
+];
 
-const comments_POST = (req, res) => {
-  res.send("POST -> /posts/:postId/comments");
-};
+const comments_POST = [
+  isAuthed,
+  body("body").notEmpty().escape(),
+  asyncHandler(async (req, res) => {
+    const result = validationResult(req);
+    /**
+     * data from comments POST route
+     * @typedef {Object} CommentData
+     * @property {string} body
+     */
+    /**
+     * @type {CommentData}
+     */
+    const data = matchedData(req);
+    if (result.isEmpty()) {
+      const post = await Post.findById(req.params.postId).exec();
+      if (!post) {
+        const error = new Error();
+        error.status = 404;
+        error.message = "Post you wish to comment on doesn't exist";
+        next(error);
+      } else {
+        // post does exist
+        const comment = new Comment({
+          commentAuthor: req.user._id,
+          postId: post._id,
+          body: data.body,
+        });
+        await comment.save();
+        res.status(201).json({
+          success: true,
+          message: `Comment: ${comment._id} was just saved on Post: ${post._id}`,
+        });
+      }
+    } else {
+      // validation errors
+      next(result.array());
+    }
+  }),
+];
 
 const comments_DELETE = (req, res) => {
   res.send("DELETE -> /posts/:postId/commentsi/:commentId");
