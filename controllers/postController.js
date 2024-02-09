@@ -152,6 +152,13 @@ const post_DELETE = [
   isAuthed,
   isAdmin,
   asyncHandler(async (req, res, next) => {
+    // Delete all comments of a post, if any
+    try {
+      await Comment.deleteMany({ postId: req.params.postId });
+    } catch (err) {
+      return next(err);
+    }
+    // Once there are no more comments, delete post
     try {
       await Post.findByIdAndDelete(req.params.postId).exec();
       return res.status(200).json({
