@@ -233,9 +233,33 @@ const comments_POST = [
   }),
 ];
 
-const comments_DELETE = (req, res) => {
-  res.send("DELETE -> /posts/:postId/commentsi/:commentId");
-};
+const comments_DELETE = [
+  isAuthed,
+  asyncHandler(async (req, res, next) => {
+    const { commentId } = req.params;
+    const comment = await Comment.findById(commentId)
+      .populate("commentAuthor")
+      .exec();
+    if (!comment) {
+      const error = new Error();
+      error.status = 404;
+      error.message = `Comment: ${commentId} doesn't exist.`;
+      return next(error);
+    }
+    if (req.user.isAdmin || comment.commentAuthor.id === req.user.id) {
+      await Comment.findByIdAndDelete(commentId);
+      return res.status(200).json({
+        success: true,
+        message: `comment: ${comment._id} has been deleted`,
+      });
+    } else {
+      const error = new Error();
+      error.status = 403;
+      error.message = "You don't have the permissions to perform this action";
+      return next(error);
+    }
+  }),
+];
 
 module.exports = {
   posts_GET,

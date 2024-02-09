@@ -19,7 +19,7 @@ router.post("/posts/:postId/comments", postController.comments_POST);
 
 router.delete(
   "/posts/:postId/comments/:commentId",
-  postController.comments_POST,
+  postController.comments_DELETE,
 );
 
 module.exports = router;
