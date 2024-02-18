@@ -136,7 +136,7 @@ const post_PUT = [
         .exec();
       post.title = data.title;
       post.body = data.body;
-      post.isPublished = data.isPublished
+      post.isPublished = data.isPublished;
       await post.save();
       res
         .status(200)
