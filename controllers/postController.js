@@ -55,7 +55,7 @@ const posts_POST = [
     const data = matchedData(req);
     if (result.isEmpty()) {
       const { title, body } = data;
-      const published = data.isPublished === "true" ? true : false;
+      const published = data.isPublished;
 
       const post = new Post({
         title: title,
