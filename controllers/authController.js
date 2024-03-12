@@ -53,8 +53,12 @@ const login_POST = [
       if (user) {
         const isValid = await bcrypt.compare(password, user.password);
         if (isValid) {
-          req.session.user = { userId: user._id };
-          return res.json({ success: true, user: user._id });
+          req.session.user = { userId: user._id, isAdmin: user.isAdmin };
+          return res.json({
+            success: true,
+            user: user._id,
+            isAdmin: user.isAdmin,
+          });
         } else {
           // User exists but invalid password
 
@@ -74,7 +78,7 @@ const login_POST = [
       }
     } else {
       // validation errors
-      res.status(400).json({ errors: result.array() });
+      return res.status(400).json({ errors: result.array() });
     }
   }),
 ];
