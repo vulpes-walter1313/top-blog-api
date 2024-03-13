@@ -81,7 +81,7 @@ const posts_GET = asyncHandler(async (req, res) => {
 const posts_POST = [
   isAuthed,
   isAdmin,
-  body("title").isLength({ min: 3, max: 60 }).escape(),
+  body("title").isLength({ min: 3, max: 140 }).escape(),
   body("body").notEmpty().escape(),
   body("isPublished").isBoolean(),
   asyncHandler(async (req, res) => {
@@ -148,7 +148,7 @@ const post_GET = asyncHandler(async (req, res) => {
 
 const post_PUT = [
   isAuthed,
-  body("title").isLength({ min: 3, max: 60 }).escape(),
+  body("title").isLength({ min: 3, max: 140 }).escape(),
   body("body").notEmpty().escape(),
   body("isPublished").isBoolean(),
   asyncHandler(async (req, res) => {
