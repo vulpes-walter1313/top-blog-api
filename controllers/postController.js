@@ -6,35 +6,75 @@ const { body, validationResult, matchedData } = require("express-validator");
 const { isAuthed, isAdmin } = require("../middleware/sessionMiddleware");
 
 const posts_GET = asyncHandler(async (req, res) => {
+  let page = parseInt(req.query.page) || 1;
+  let limit = parseInt(req.query.limit) || 10;
+  // caps the limit to 20 to avoid abuse
+  if (limit > 20) {
+    limit = 20;
+  }
   if (req.user) {
     if (req.user.isAdmin) {
+      const totalCount = await Post.countDocuments({});
+      const totalPages = Math.ceil(totalCount / limit);
+      if (page > totalPages) {
+        page = totalPages;
+      }
       const posts = await Post.find({})
-        .sort({ createdAt: "desc" })
-        .limit(20)
+        .sort({ updatedAt: "desc" })
+        .limit(limit)
+        .skip((page - 1) * limit)
         .populate("author", "name")
         .exec();
-      res.status(200).json({ success: true, posts: posts });
+      res.status(200).json({
+        success: true,
+        posts: posts,
+        totalPages: totalPages,
+        currentPage: page,
+      });
     } else {
       // user authenticated but not admin
+      const totalCount = await Post.countDocuments({ isPublished: true });
+      const totalPages = Math.ceil(totalCount / limit);
+      if (page > totalPages) {
+        page = totalPages;
+      }
       const posts = await Post.find({})
         .where("isPublished")
         .equals(true)
-        .sort({ createdAt: "desc" })
-        .limit(20)
+        .sort({ updatedAt: "desc" })
+        .limit(limit)
+        .skip((page - 1) * limit)
         .populate("author", "name -_id")
         .exec();
-      res.status(200).json({ success: true, posts: posts });
+
+      res.status(200).json({
+        success: true,
+        posts: posts,
+        totalPages: totalPages,
+        currentPage: page,
+      });
     }
   } else {
     // user not authenticated
+    const totalCount = await Post.countDocuments({ isPublished: true });
+    const totalPages = Math.ceil(totalCount / limit);
+    if (page > totalPages) {
+      page = totalPages;
+    }
     const posts = await Post.find({})
       .where("isPublished")
       .equals(true)
-      .sort({ createdAt: "desc" })
-      .limit(20)
+      .sort({ updatedAt: "desc" })
+      .limit(limit)
+      .skip((page - 1) * limit)
       .populate("author", "name -_id")
       .exec();
-    res.status(200).json({ success: true, posts: posts });
+    res.status(200).json({
+      success: true,
+      posts: posts,
+      totalPages: totalPages,
+      currentPage: page,
+    });
   }
 });
 
@@ -124,11 +164,12 @@ const post_PUT = [
     }
     const result = validationResult(req);
     /**
-     * @typedef {Object} data
+     * @typedef {Object} PostPayload
      * @property {string} title
      * @property {string} body
-     * @property {string} isPublished
+     * @property {boolean} isPublished
      */
+    /**@type PostPayload */
     const data = matchedData(req);
     if (result.isEmpty()) {
       const post = await Post.findById(req.params.postId)
