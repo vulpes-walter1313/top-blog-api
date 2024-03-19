@@ -8,6 +8,7 @@ const { isAuthed, isAdmin } = require("../middleware/sessionMiddleware");
 const posts_GET = asyncHandler(async (req, res) => {
   let page = parseInt(req.query.page) || 1;
   let limit = parseInt(req.query.limit) || 10;
+  const showComments = (req.query.comments || "").toLowerCase() === "true";
   // caps the limit to 20 to avoid abuse
   if (limit > 20) {
     limit = 20;
@@ -25,9 +26,20 @@ const posts_GET = asyncHandler(async (req, res) => {
         .skip((page - 1) * limit)
         .populate("author", "name")
         .exec();
+      let postsWithCommentCount = [];
+      if (showComments) {
+        postsWithCommentCount = await Promise.all(
+          posts.map(async (post) => {
+            const commentCount = await Comment.countDocuments({
+              postId: post._id,
+            });
+            return { ...post.toObject(), commentCount };
+          }),
+        );
+      }
       res.status(200).json({
         success: true,
-        posts: posts,
+        posts: showComments ? postsWithCommentCount : posts,
         totalPages: totalPages,
         currentPage: page,
       });
@@ -47,9 +59,20 @@ const posts_GET = asyncHandler(async (req, res) => {
         .populate("author", "name -_id")
         .exec();
 
+      let postsWithCommentCount = [];
+      if (showComments) {
+        postsWithCommentCount = await Promise.all(
+          posts.map(async (post) => {
+            const commentCount = await Comment.countDocuments({
+              postId: post._id,
+            });
+            return { ...post.toObject(), commentCount };
+          }),
+        );
+      }
       res.status(200).json({
         success: true,
-        posts: posts,
+        posts: showComments ? postsWithCommentCount : posts,
         totalPages: totalPages,
         currentPage: page,
       });
@@ -69,9 +92,20 @@ const posts_GET = asyncHandler(async (req, res) => {
       .skip((page - 1) * limit)
       .populate("author", "name -_id")
       .exec();
+    let postsWithCommentCount = [];
+    if (showComments) {
+      postsWithCommentCount = await Promise.all(
+        posts.map(async (post) => {
+          const commentCount = await Comment.countDocuments({
+            postId: post._id,
+          });
+          return { ...post.toObject(), commentCount };
+        }),
+      );
+    }
     res.status(200).json({
       success: true,
-      posts: posts,
+      posts: showComments ? postsWithCommentCount : posts,
       totalPages: totalPages,
       currentPage: page,
     });
