@@ -249,21 +249,37 @@ const post_DELETE = [
 
 const comments_GET = [
   asyncHandler(async (req, res, next) => {
+    const limit = 10;
+    let page = parseInt(req.query.page) || 1;
+
     const post = await Post.exists({ _id: req.params.postId }).exec();
     if (!post) {
+      // if post doesn't exists then quit before fetching comments.
       const error = new Error();
       error.status = 404;
       error.message = "That post doesn't exist";
       return next(error);
     }
+    const totalCount = await Comment.countDocuments({
+      postId: req.params.postId,
+    }).exec();
+    const totalPages = Math.ceil(totalCount / limit);
+    if (page > totalPages) {
+      page = totalPages;
+    }
     const comments = await Comment.find({ postId: req.params.postId })
+      .sort({ updatedAt: "desc" })
+      .limit(limit)
+      .skip((page - 1) * limit)
       .populate("commentAuthor", "name")
       .exec();
     if (comments) {
       return res.status(200).json({
         success: true,
         comments: comments,
-        numComments: comments.length,
+        numComments: totalCount,
+        totalPages: totalPages,
+        currentPage: page,
       });
     } else {
       const error = new Error();
